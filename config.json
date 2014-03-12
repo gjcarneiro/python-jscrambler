@@ -1,0 +1,19 @@
+{
+    "connection":{ 
+        "access_key":"YOUR_ACCESS_KEY",
+        "secret_key":"YOUR_SECRET_KEY",
+        "server":"api.jscrambler.com",
+        "port":"443"
+    },
+    
+    "files":{
+	"1":"file1.js",
+	"2":"file2.js"
+    },
+    
+    "parameters":{
+        "whitespace":"%DEFAULT%",
+        "rename_all":"true",
+	"function_outlining":"true"
+    }
+}
