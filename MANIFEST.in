@@ -1,0 +1,4 @@
+include requirements.txt
+include config.json
+include client_example.py
+recursive-include lib *.js

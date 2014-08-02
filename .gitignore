@@ -1,0 +1,6 @@
+*.pyc
+*~
+config.json.local
+MANIFEST
+build
+dist

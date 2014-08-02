@@ -1,0 +1,18 @@
+{
+    "keys": {
+        "accessKey": "YOUR_ACCESS_KEY",
+        "secretKey": "YOUR_SECRET_KEY"
+    },
+    "host": "api.jscrambler.com",
+    "port": "443",
+    
+    "filesSrc": ["lib/**/*.js"],
+    "filesDest": "build/",
+    
+    "params": {
+        "whitespace": "%DEFAULT%",
+	    "rename_local": "%DEFAULT%",
+	    "function_outlining": "false",
+        "rename_all": "false"
+    }
+}

@@ -1,0 +1,99 @@
+#!/usr/bin/env python
+# Copyright (c) 2013-2014 Gustavo J. A. M. Carneiro <gjcarneiro@gmail.com>
+
+# Permission is hereby granted, free of charge, to any person
+# obtaining a copy of this software and associated documentation files
+# (the "Software"), to deal in the Software without restriction,
+# including without limitation the rights to use, copy, modify, merge,
+# publish, distribute, sublicense, and/or sell copies of the Software,
+# and to permit persons to whom the Software is furnished to do so,
+# subject to the following conditions:
+
+# The above copyright notice and this permission notice shall be
+# included in all copies or substantial portions of the Software.
+
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+# NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS
+# BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+# ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+# CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+#
+# Adapted by JScrambler - 2013
+
+from __future__ import print_function
+import os
+import sys
+import json
+import argparse
+
+import jscrambler
+
+
+def main():
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('outdir',
+                        metavar="DIR",
+                        help=('directory where the '
+                              'transformed files will be placed'))
+    parser.add_argument("files",
+                        metavar="FILE",
+                        nargs='+',
+                        help="list of source files to transform")
+    parser.add_argument('--verbose', '-v', action='count', default=0)
+    args = parser.parse_args()
+
+    if not os.path.isdir(args.outdir):
+        print("Error: {!r} is not a directory.".format(args.outdir),
+              file=sys.stderr)
+        sys.exit(2)
+    for fname in args.files:
+        if not os.path.isfile(fname):
+            print("Error: {!r} is not a file.".format(fname),
+                  file=sys.stderr)
+            sys.exit(2)
+
+    import logging
+    if args.verbose == 0:
+        logging.basicConfig(level=logging.INFO)
+        logging.getLogger("requests").setLevel(logging.WARNING)
+        logging.getLogger("urllib3").setLevel(logging.WARNING)
+    elif args.verbose == 1:
+        logging.basicConfig(level=logging.DEBUG)
+        logging.getLogger("requests").setLevel(logging.WARNING)
+        logging.getLogger("urllib3").setLevel(logging.WARNING)
+    else:
+        logging.basicConfig(level=logging.DEBUG)
+        logging.getLogger("requests").setLevel(logging.INFO)
+        logging.getLogger("urllib3").setLevel(logging.INFO)
+
+    config_file = os.path.expanduser(os.path.join("~", ".jscrambler"))
+    try:
+        with open(config_file, "r") as jsonfile:
+            config = json.load(jsonfile)
+    except IOError as error:
+        print("Error: could not open configuration file: {}".format(str(error)),
+              file=sys.stderr)
+        sys.exit(2)
+
+    client = jscrambler.Client(config["keys"]["accessKey"],
+                               config["keys"]["secretKey"])
+
+    #print("pyjscrambler 1.0")
+    #print("Using API URL: {}".format(client.api_url))
+
+    result = client.upload_code(args.files, **config["params"])
+    try:
+        project_id = result['id']
+    except KeyError:
+        print("Error: {} (from the jscrambler server)".format(str(result)),
+              file=sys.stderr)
+        sys.exit(3)
+    client.poll_project(project_id)
+    client.download_code(project_id, args.outdir)
+
+if __name__ == '__main__':
+    main()
