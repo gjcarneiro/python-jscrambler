@@ -14,7 +14,6 @@ except ImportError:
     from io import BytesIO as StringIO
 from zipfile import ZipFile
 import time
-import io
 import codecs
 
 LOG = logging.getLogger("jscrambler")
@@ -59,8 +58,9 @@ class Client(object):
                                                           ver=apiVersion)
         else:
             self.api_url = "http://{host}:{port}/v{ver}".format(host=host,
-                                                                port=port,
-                                                                ver=apiVersion)
+                                                                 port=port,
+                                                                 ver=apiVersion)
+        #print("URL:", self.api_url)
         LOG.debug("jscrambler API URL: %s", self.api_url)
         self.access_key = codecs.decode(accessKey.encode("ascii"), "hex_codec")
         self.secret_key = codecs.decode(secretKey.encode("ascii"), "hex_codec")
@@ -89,6 +89,8 @@ class Client(object):
         """
         if isinstance(files_src, text_types):
             files_src = [files_src]
+        else:
+            assert isinstance(files_src, list)
         file_mem = StringIO()
         zip_file = ZipFile(file_mem, "w")
         for src in files_src:
@@ -224,7 +226,7 @@ class Client(object):
         """
         # if config is a file name, read json from it
         if isinstance(config, text_types):
-            with io.open(config, "rt") as jsonfile:
+            with open(config, "r") as jsonfile:
                 config = json.load(jsonfile)
 
         upload_result = self.upload_code(config['filesSrc'],
