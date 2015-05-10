@@ -112,12 +112,13 @@ def post(api_url, access_key, secret_key, files, **opt_params):
     _add_authentication(params, access_key, secret_key, "POST", url,
                         signature_parameters=sig_params)
     r = requests.post(url, data=OrderedDict(sorted(params)), files=files_dict)
+    # FIXME: need to close the files
     return r.json()
 
 
 def get_status(api_url, access_key, secret_key, status=None, offset=None,
                limit=None, **opt_params):
-    params = opt_params.items()
+    params = list(opt_params.items())
     if status is not None:
         params.append(('status', str(status)))
     if offset is not None:
