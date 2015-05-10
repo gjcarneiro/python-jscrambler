@@ -58,8 +58,8 @@ class Client(object):
                                                           ver=apiVersion)
         else:
             self.api_url = "http://{host}:{port}/v{ver}".format(host=host,
-                                                                 port=port,
-                                                                 ver=apiVersion)
+                                                                port=port,
+                                                                ver=apiVersion)
         #print("URL:", self.api_url)
         LOG.debug("jscrambler API URL: %s", self.api_url)
         self.access_key = codecs.decode(accessKey.encode("ascii"), "hex_codec")
@@ -152,7 +152,7 @@ class Client(object):
                                                       self.secret_key,
                                                       project_id)
 
-    def poll_project(self, project_id, maximum_poll_retries=10,  poll_pause=1):
+    def poll_project(self, project_id, maximum_poll_retries=10, poll_pause=1):
         """
         Polls a project until it has finished processing.
 
@@ -211,7 +211,6 @@ class Client(object):
                                        self.secret_key,
                                        project_id)
 
-
     def process(self, config):
         """Executes the normal use case (upload_code + poll_project +
         download_code) given a path to a configuration file or a
@@ -236,4 +235,3 @@ class Client(object):
         self.poll_project(project_id)
 
         self.download_code(project_id, config['filesDest'])
-
