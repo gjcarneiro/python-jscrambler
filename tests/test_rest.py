@@ -104,6 +104,104 @@ class TestRest(unittest.TestCase):
         self.assertEqual(params.get('foo'), 'bar')
         self.assertEqual(resp1, {'id': '123'})
 
+    def test_project_zip(self):
+        url = "http://api.jscrambler.com/v3"
+        access_key = codecs.decode(TEST_ACCESS_KEY.encode("ascii"), "hex_codec")
+        secret_key = codecs.decode(TEST_SECRET_KEY.encode("ascii"), "hex_codec")
+
+        params_received = []
+
+        @urlmatch(method='GET', path=r'/v3/code/123\.zip')
+        def jscrambler_server_mock(_url, request):
+            params = request.original.params
+            params_received.append(params)
+            content = b'zipcontent'
+            headers = {'content-type': 'application/zip'}
+            return response(200, content, headers, request=request)
+
+        with HTTMock(jscrambler_server_mock):
+            resp1 = jscrambler.rest.get_project_zip(url,
+                                                    access_key,
+                                                    secret_key,
+                                                    "123")
+        self.assertEqual(resp1, b'zipcontent')
+
+    def test_project_source_info(self):
+        url = "http://api.jscrambler.com/v3"
+        access_key = codecs.decode(TEST_ACCESS_KEY.encode("ascii"), "hex_codec")
+        secret_key = codecs.decode(TEST_SECRET_KEY.encode("ascii"), "hex_codec")
+
+        params_received = []
+
+        @urlmatch(method='GET', path=r'/v3/code/123/a3b85573d493d803537555f48a1a7ac9778ec19f\.json')
+        def jscrambler_server_mock(_url, request):
+            params = request.original.params
+            params_received.append(params)
+            content = b'{"foo": "bar"}'
+            headers = {'content-type': 'application/json'}
+            return response(200, content, headers, request=request)
+
+        with HTTMock(jscrambler_server_mock):
+            resp1 = jscrambler.rest.get_project_source_info(
+                url,
+                access_key,
+                secret_key,
+                "123",
+                "a3b85573d493d803537555f48a1a7ac9778ec19f")
+
+        self.assertEqual(resp1, {"foo": "bar"})
+
+    def test_get_project_source(self):
+        url = "http://api.jscrambler.com/v3"
+        access_key = codecs.decode(TEST_ACCESS_KEY.encode("ascii"), "hex_codec")
+        secret_key = codecs.decode(TEST_SECRET_KEY.encode("ascii"), "hex_codec")
+
+        params_received = []
+
+        @urlmatch(method='GET', path=r'/v3/code/123/a3b85573d493d803537555f48a1a7ac9778ec19f\.js')
+        def jscrambler_server_mock(_url, request):
+            params = request.original.params
+            params_received.append(params)
+            content = b'foo = bar'
+            headers = {} #{'content-type': 'application/json'}
+            return response(200, content, headers, request=request)
+
+        with HTTMock(jscrambler_server_mock):
+            resp1 = jscrambler.rest.get_project_source(
+                url,
+                access_key,
+                secret_key,
+                "123",
+                "a3b85573d493d803537555f48a1a7ac9778ec19f",
+                "js")
+
+        self.assertEqual(resp1, "foo = bar")
+
+    def test_delete_project(self):
+        url = "http://api.jscrambler.com/v3"
+        access_key = codecs.decode(TEST_ACCESS_KEY.encode("ascii"), "hex_codec")
+        secret_key = codecs.decode(TEST_SECRET_KEY.encode("ascii"), "hex_codec")
+
+        params_received = []
+
+        @urlmatch(method='DELETE', path=r'/v3/code/123.json')
+        def jscrambler_server_mock(_url, request):
+            params = request.original.params
+            params_received.append(params)
+            content = {'id': '123', 'deleted': True}
+            headers = {'content-type': 'application/json'}
+            return response(200, content, headers, request=request)
+
+        with HTTMock(jscrambler_server_mock):
+            resp1 = jscrambler.rest.delete_project(
+                url,
+                access_key,
+                secret_key,
+                "123")
+
+        self.assertEqual(resp1, {'id': '123', 'deleted': True})
+
+
 if __name__ == '__main__':
     import logging
     logging.basicConfig(level='DEBUG')
