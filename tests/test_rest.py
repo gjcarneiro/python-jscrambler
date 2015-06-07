@@ -7,7 +7,8 @@ from httmock import HTTMock, response, urlmatch
 
 TEST_ACCESS_KEY = "1234567435344324213123123232323215652211"
 TEST_SECRET_KEY = "8799834787827382382657637642847823734212"
-TEST_FILE1 = os.path.join(os.path.dirname(__file__), "test1.js")
+TEST_FILE1 = os.path.relpath(os.path.join(os.path.dirname(__file__),
+                             "test1.js"))
 
 
 class TestRest(unittest.TestCase):

@@ -19,4 +19,6 @@ setup(name='jscrambler',
       zip_safe=False,
       long_description=LONG_DESCRIPTION,
       install_requires=["requests"],
+      test_suite='tests',
+      tests_require=["httmock"],
       )
