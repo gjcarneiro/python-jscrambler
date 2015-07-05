@@ -1,3 +1,4 @@
+import pytest
 import os
 import codecs
 import jscrambler.rest
@@ -10,7 +11,8 @@ TEST_FILE1 = os.path.relpath(os.path.join(os.path.dirname(__file__),
                              "test1.js"))
 
 
-def test_post():
+@pytest.mark.parametrize("file_obj_mode", [False, True])
+def test_post(file_obj_mode):
     url = "http://api.jscrambler.com/v3"
     access_key = codecs.decode(TEST_ACCESS_KEY.encode("ascii"), "hex_codec")
     secret_key = codecs.decode(TEST_SECRET_KEY.encode("ascii"), "hex_codec")
@@ -34,9 +36,16 @@ def test_post():
         return response(200, content, headers, request=request)
 
     with HTTMock(jscrambler_server_mock):
-        resp = jscrambler.rest.post(url, access_key, secret_key,
-                                    [TEST_FILE1],
-                                    foo="bar", zbr="xpto")
+        if file_obj_mode:
+            with open(TEST_FILE1, "rb") as file_obj:
+                resp = jscrambler.rest.post(
+                    url, access_key, secret_key,
+                    [(TEST_FILE1, file_obj)],
+                    foo="bar", zbr="xpto")
+        else:
+            resp = jscrambler.rest.post(url, access_key, secret_key,
+                                        [TEST_FILE1],
+                                        foo="bar", zbr="xpto")
 
     assert resp == {'id': '123'}
     assert files_received == [('file_0', 'tests/test1.js', 'hello()\n')]
@@ -68,7 +77,7 @@ def test_status():
     with HTTMock(jscrambler_server_mock):
         params_received = []
         resp1 = jscrambler.rest.get_status(url, access_key, secret_key,
-                                           "123", foo="bar")
+                                           "123", foo="bar", offset=0, limit=0)
         params = dict(params_received[0])
         assert params.get('foo') == 'bar'
         params_received = []
@@ -98,13 +107,15 @@ def test_project_status():
                                                    access_key,
                                                    secret_key,
                                                    "123",
-                                                   foo="bar")
+                                                   foo="bar",
+                                                   symbol_table="abc")
     params = dict(params_received[0])
     assert params.get('foo') == 'bar'
     assert resp1 == {'id': '123'}
 
 
-def test_project_zip():
+@pytest.mark.parametrize("return_error", [False, True])
+def test_project_zip(return_error):
     url = "http://api.jscrambler.com/v3"
     access_key = codecs.decode(TEST_ACCESS_KEY.encode("ascii"), "hex_codec")
     secret_key = codecs.decode(TEST_SECRET_KEY.encode("ascii"), "hex_codec")
@@ -117,14 +128,22 @@ def test_project_zip():
         params_received.append(params)
         content = b'zipcontent'
         headers = {'content-type': 'application/zip'}
-        return response(200, content, headers, request=request)
+        return response(400 if return_error else 200,
+                        content, headers, request=request)
 
     with HTTMock(jscrambler_server_mock):
-        resp1 = jscrambler.rest.get_project_zip(url,
+        if return_error:
+            with pytest.raises(RuntimeError):
+                jscrambler.rest.get_project_zip(url,
                                                 access_key,
                                                 secret_key,
                                                 "123")
-    assert resp1 == b'zipcontent'
+        else:
+            resp1 = jscrambler.rest.get_project_zip(url,
+                                                    access_key,
+                                                    secret_key,
+                                                    "123")
+            assert resp1 == b'zipcontent'
 
 
 def test_project_source_info():
