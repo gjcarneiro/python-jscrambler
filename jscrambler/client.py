@@ -176,7 +176,7 @@ class Client(object):
             if status['finished_at'] is None:
                 time.sleep(poll_pause)
                 continue
-            if project_id != status['id']:
+            if project_id != status['id']:  # pragma:nocover
                 raise AssertionError("wrong project ID, expected {0} got {1}"
                                      .format(project_id, status['id']))
             if status.get("error_id", '0') != '0':
@@ -195,7 +195,7 @@ class Client(object):
         :param source_id: FIXME: not used yet
 
         """
-        if not os.path.isdir(files_dest):
+        if not os.path.isdir(files_dest):  # pragma:nocover
             raise ValueError("output directory {!r} does not exist"
                              .format(files_dest))
 

@@ -1,0 +1,5 @@
+{
+    "filesSrc": ["somefiles"],
+    "params": {"option1": "value1"},
+    "filesDest": "destdir"
+}
