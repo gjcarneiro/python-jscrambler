@@ -23,7 +23,7 @@ class PyTest(TestCommand):
         sys.exit(errno)
 
 
-with open('README') as file_:
+with open('README.md') as file_:
     LONG_DESCRIPTION = file_.read()
 
 
