@@ -42,6 +42,6 @@ setup(name='jscrambler',
       long_description=LONG_DESCRIPTION,
       install_requires=["requests"],
       test_suite='tests',
-      tests_require=["httmock", "pytest"],
+      tests_require=["httmock", "pytest", "django"],
       cmdclass={'test': PyTest},
       )
