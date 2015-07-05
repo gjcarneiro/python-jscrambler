@@ -1,4 +1,8 @@
 {
+	"keys": {
+		"accessKey": "1234567435344324213123123232323215652211",
+		"secretKey": "8799834787827382382657637642847823734212"
+	},
     "filesSrc": ["somefiles"],
     "params": {"option1": "value1"},
     "filesDest": "destdir"
