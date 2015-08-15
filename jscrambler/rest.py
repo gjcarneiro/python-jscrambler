@@ -52,6 +52,38 @@ import codecs
 #API_HOSTNAME = "api.jscrambler.com"
 #API_URL = "https://{0}/v3".format(API_HOSTNAME)
 
+try:
+    text_types = str, unicode
+except NameError:
+    text_types = str, bytes
+
+
+def serialise_parameters(params):
+    """
+    Convert pameters to a format suitable for serialization:
+
+    1. string values are passed as is
+    2. boolean values are:
+       a) ommitted if false
+       b) converted to the string value '%DEFAULT' if true
+
+    params: a dict
+    returns a list of (key, value) tuples
+    """
+    retval = []
+    for key, value in params.items():
+        if isinstance(value, bool):
+            if value:
+                retval.append((key, "%DEFAULT%"))
+            # else filter it out
+        elif isinstance(value, text_types):
+            retval.append((key, value))
+        else:
+            raise TypeError("parameter type {} not supported"
+                            .format(type(value)))
+    return retval
+
+
 def _quote(value):
     value = quote(value)
     value = value.replace("%7E", "~")
@@ -94,7 +126,7 @@ def post(api_url, access_key, secret_key, files, **opt_params):
     :param files: List of files to upload.  It can be either a list of file
         names or a list of (file_name, file_object) tuples.
     """
-    params = list(opt_params.items())
+    params = serialise_parameters(opt_params)
     sig_params = []
     files_dict = {}
     for num, file_spec in enumerate(files):
@@ -118,7 +150,7 @@ def post(api_url, access_key, secret_key, files, **opt_params):
 
 def get_status(api_url, access_key, secret_key, status=None, offset=None,
                limit=None, **opt_params):
-    params = list(opt_params.items())
+    params = serialise_parameters(opt_params)
     if status is not None:
         params.append(('status', str(status)))
     if offset is not None:
@@ -134,7 +166,7 @@ def get_status(api_url, access_key, secret_key, status=None, offset=None,
 def get_project_status(api_url, access_key, secret_key, project_id,
                        symbol_table=None, **opt_params):
     url = api_url + '/code/{0}.json'.format(project_id)
-    params = list(opt_params.items())
+    params = serialise_parameters(opt_params)
     if symbol_table is not None:
         params.append(('symbol_table', str(symbol_table)))
     _add_authentication(params, access_key, secret_key, "GET", url)
@@ -147,7 +179,7 @@ def get_project_zip(api_url, access_key, secret_key, project_id, **opt_params):
     output_file: a file name or file object
     """
     url = api_url + '/code/{0}.zip'.format(project_id)
-    params = list(opt_params.items())
+    params = serialise_parameters(opt_params)
     _add_authentication(params, access_key, secret_key, "GET", url)
     r = requests.get(url, params=OrderedDict(sorted(params)))
     if r.status_code == requests.codes.ok:
@@ -159,7 +191,7 @@ def get_project_zip(api_url, access_key, secret_key, project_id, **opt_params):
 def get_project_source_info(api_url, access_key, secret_key, project_id,
                             source_id, **opt_params):
     url = api_url + '/code/{0}/{1}.json'.format(project_id, source_id)
-    params = list(opt_params.items())
+    params = serialise_parameters(opt_params)
     _add_authentication(params, access_key, secret_key, "GET", url)
     r = requests.get(url, params=OrderedDict(sorted(params)))
     return r.json()
@@ -168,7 +200,7 @@ def get_project_source_info(api_url, access_key, secret_key, project_id,
 def get_project_source(api_url, access_key, secret_key, project_id, source_id,
                        extension, **opt_params):
     url = api_url + '/code/{0}/{1}.{2}'.format(project_id, source_id, extension)
-    params = list(opt_params.items())
+    params = serialise_parameters(opt_params)
     _add_authentication(params, access_key, secret_key, "GET", url)
     r = requests.get(url, params=OrderedDict(sorted(params)))
     return r.text
@@ -176,9 +208,7 @@ def get_project_source(api_url, access_key, secret_key, project_id, source_id,
 
 def delete_project(api_url, access_key, secret_key, project_id, **opt_params):
     url = api_url + '/code/{0}.json'.format(project_id)
-    params = list(opt_params.items())
+    params = serialise_parameters(opt_params)
     _add_authentication(params, access_key, secret_key, "DELETE", url)
     r = requests.delete(url, params=OrderedDict(sorted(params)))
     return r.json()
-
-
